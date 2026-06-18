@@ -1,8 +1,7 @@
 # Vercel deployment
 
-The deployable application root is `project/`. The repository-level
-`netlify.toml` and the files under `netlify/` remain in place for the existing
-Netlify deployment.
+The deployable application is at the repository root. The files under
+`netlify/` remain in place for compatibility with the existing Netlify setup.
 
 ## Vercel project settings
 
@@ -10,7 +9,7 @@ Configure the Vercel project with these exact values:
 
 | Setting | Value |
 | --- | --- |
-| Root Directory | `project` |
+| Root Directory | Leave blank (repository root) |
 | Framework Preset | `Vite` |
 | Install Command | `pnpm install --frozen-lockfile` |
 | Build Command | `pnpm run build:client` |
@@ -21,10 +20,18 @@ The build command and output directory are also declared in `vercel.json`.
 
 ## Environment variables
 
-Add every variable listed in `.env.example` to the Vercel project. Use the
-same values as the working production deployment. Set `DATABASE_URL` to the
-existing Postgres connection string and set `PUBLIC_SITE_URL` to the final
-public origin, for example `https://www.example.com`.
+Add every variable listed in `.env.example` to the Vercel project for the
+Production environment. Use the same values as the working local environment.
+In particular:
+
+- `STRIPE_SECRET_KEY` must be available to the server function.
+- `ADMIN_PASSWORD` must match the password expected by the working admin portal.
+- `ADMIN_TOKEN_SECRET` should be a long random server-side value.
+- `DATABASE_URL` is required for durable admin catalogue edits on Vercel.
+- `PUBLIC_SITE_URL` should be the final public origin.
+
+Redeploy after adding or changing environment variables. Vercel functions do
+not read the local `.env` file from another machine.
 
 Do not prefix server secrets with `VITE_`. They are consumed only by the
 Express backend.
@@ -53,7 +60,7 @@ with that webhook endpoint as `STRIPE_WEBHOOK_SECRET`.
 
 ## Local checks
 
-From `project/`:
+From the repository root:
 
 ```bash
 pnpm install --frozen-lockfile
