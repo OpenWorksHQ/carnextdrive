@@ -1,0 +1,34 @@
+# Root-level Netlify config. The actual app lives in the project/ subdirectory,
+# so we set the base directory here in code (instead of relying on the Netlify
+# UI). With base = "project", Netlify cd's into project/, runs npm there, and
+# all other paths below are resolved relative to project/.
+[build]
+  base = "project"
+  command = "npm run build:client"
+  functions = "netlify/functions"
+  publish = "dist/spa"
+
+[build.environment]
+  # Node 20 has built-in fetch and is supported by Netlify Functions.
+  NODE_VERSION = "20"
+  # Install with pnpm (the project's package manager). npm can't parse the
+  # `link:` protocol in Vite 7's own package.json. The function is independent
+  # of the install layout because esbuild bundles all deps into the handler.
+
+[functions]
+  # Bundle ALL runtime dependencies INTO the function (no external_node_modules)
+  # so it is self-contained and works regardless of how deps are installed
+  # (npm, pnpm, symlinked store). This is the deployment-agnostic fix for the
+  # "Cannot find module 'express'" cold-start crash.
+  node_bundler = "esbuild"
+
+[[redirects]]
+  force = true
+  from = "/api/*"
+  status = 200
+  to = "/.netlify/functions/api/:splat"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
