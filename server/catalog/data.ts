@@ -28,7 +28,7 @@ export const SEED_CARS: Car[] = [
     id: "1",
     name: "Chrysler 200",
     type: "Sedan",
-    weekly: 349,
+    weekly: 290,
     monthly: 1199,
     seats: 5,
     image: "/cars/chrysler-200.jpg",
