@@ -26,12 +26,15 @@ import { Car, cloneSeed } from "./data";
 // NETLIFY_DATABASE_URL / NETLIFY_DATABASE_URL_UNPOOLED. Plain Postgres / Replit
 // dev exposes DATABASE_URL. Accept all so the app works regardless of how the
 // database was provisioned.
-const CONNECTION_STRING =
-  process.env.NETLIFY_DB_URL ||
-  process.env.NETLIFY_DATABASE_URL ||
-  process.env.NETLIFY_DATABASE_URL_UNPOOLED ||
-  process.env.DATABASE_URL ||
-  "";
+function getConnectionString(): string {
+  return (
+    process.env.NETLIFY_DB_URL ||
+    process.env.NETLIFY_DATABASE_URL ||
+    process.env.NETLIFY_DATABASE_URL_UNPOOLED ||
+    process.env.DATABASE_URL ||
+    ""
+  );
+}
 
 // Local file fallback. On Lambda/Netlify only /tmp is writable.
 const DATA_DIR = process.env.LAMBDA_TASK_ROOT
@@ -48,6 +51,7 @@ const CACHE_TTL_MS = 30_000;
 // Single pool reused across warm invocations. max:1 keeps connection use low in
 // the serverless runtime (Neon's pooled endpoint handles concurrency).
 let pool: Pool | null = null;
+let poolConnectionString = "";
 let tableReady: Promise<void> | null = null;
 
 function sslConfig(cs: string): false | { rejectUnauthorized: boolean } {
@@ -61,13 +65,16 @@ function sslConfig(cs: string): false | { rejectUnauthorized: boolean } {
 }
 
 function getPool(): Pool | null {
-  if (!CONNECTION_STRING) return null;
-  if (!pool) {
+  const connectionString = getConnectionString();
+  if (!connectionString) return null;
+  if (!pool || poolConnectionString !== connectionString) {
     pool = new Pool({
-      connectionString: CONNECTION_STRING,
+      connectionString,
       max: 1,
-      ssl: sslConfig(CONNECTION_STRING),
+      ssl: sslConfig(connectionString),
     });
+    poolConnectionString = connectionString;
+    tableReady = null;
   }
   return pool;
 }
@@ -180,7 +187,7 @@ export async function getStoreHealth(): Promise<{
   source: "postgres" | "file" | "seed";
   error?: string;
 }> {
-  const hasConnectionString = Boolean(CONNECTION_STRING);
+  const hasConnectionString = Boolean(getConnectionString());
   if (hasConnectionString) {
     const p = getPool();
     try {
@@ -222,7 +229,9 @@ export async function getCatalog(): Promise<Car[]> {
   // for local dev where no connection string is set.
   const fromDb = await readFromDb();
   const cars =
-    fromDb ?? (CONNECTION_STRING ? null : await readFromFile()) ?? cloneSeed();
+    fromDb ??
+    (getConnectionString() ? null : await readFromFile()) ??
+    cloneSeed();
   cache = { cars, at: Date.now() };
   return cars;
 }
@@ -242,11 +251,11 @@ export async function getCatalogMap(): Promise<Record<string, Car>> {
  * surface a real error instead of losing the change later.
  */
 export async function saveCatalog(cars: Car[]): Promise<boolean> {
-  const hasDb = Boolean(CONNECTION_STRING);
+  const hasDb = Boolean(getConnectionString());
   const dbOk = await writeToDb(cars);
   // The local file is only the durable backend in no-DB local dev. When a DB is
   // configured, skip it entirely: a /tmp write is redundant and would never be
-  // read back (getCatalog ignores the file when CONNECTION_STRING is set).
+  // read back (getCatalog ignores the file when a connection string is set).
   const fileOk = hasDb ? false : await writeToFile(cars);
   // Update cache regardless so the running instance is immediately consistent.
   cache = { cars, at: Date.now() };

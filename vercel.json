@@ -9,10 +9,6 @@
       "handle": "filesystem"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "/api/index"
-    },
-    {
       "src": "/(.*)",
       "dest": "/index.html"
     }

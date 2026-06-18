@@ -19,17 +19,24 @@ import { z } from "zod";
 import { Car } from "../catalog/data";
 import { getCatalog, saveCatalog } from "../catalog/store";
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
-const TOKEN_SECRET =
-  process.env.ADMIN_TOKEN_SECRET ||
-  process.env.STRIPE_SECRET_KEY || // reuse an existing high-entropy secret if present
-  "carnextdrive-admin-secret-change-me";
 const TOKEN_TTL_MS = 1000 * 60 * 60 * 8; // 8 hours
+
+function getAdminPassword(): string {
+  return process.env.ADMIN_PASSWORD || "admin123";
+}
+
+function getTokenSecret(): string {
+  return (
+    process.env.ADMIN_TOKEN_SECRET ||
+    process.env.STRIPE_SECRET_KEY ||
+    "carnextdrive-admin-secret-change-me"
+  );
+}
 
 // ── Token helpers ──────────────────────────────────────────────────────────
 function sign(payload: string): string {
   return crypto
-    .createHmac("sha256", TOKEN_SECRET)
+    .createHmac("sha256", getTokenSecret())
     .update(payload)
     .digest("hex");
 }
@@ -83,7 +90,10 @@ export const requireAdmin: RequestHandler = (req, res, next) => {
 // ── Login ──────────────────────────────────────────────────────────────────
 export const adminLogin: RequestHandler = (req, res) => {
   const password = (req.body?.password ?? "") as string;
-  if (typeof password !== "string" || !timingSafeStringEqual(password, ADMIN_PASSWORD)) {
+  if (
+    typeof password !== "string" ||
+    !timingSafeStringEqual(password, getAdminPassword())
+  ) {
     return res.status(401).json({ error: "Incorrect password" });
   }
   return res.json({ token: issueToken(), expiresInMs: TOKEN_TTL_MS });
