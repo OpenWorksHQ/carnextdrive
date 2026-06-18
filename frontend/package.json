@@ -1,0 +1,8 @@
+{
+  "name": "carnextdrive-frontend-wrapper",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "start": "cd /app/project && node node_modules/vite/bin/vite.js preview --host 0.0.0.0 --port 3000"
+  }
+}
