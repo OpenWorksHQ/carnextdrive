@@ -3,11 +3,8 @@ import {
   listCars,
   requireAdmin,
 } from "../../server/routes/admin";
-import { invoke, setCors } from "../../server/vercel";
 
 export default async function handler(req: any, res: any) {
-  setCors(res);
-  if (req.method === "OPTIONS") return res.status(204).end();
   const endpoint =
     req.method === "GET"
       ? listCars
@@ -18,8 +15,10 @@ export default async function handler(req: any, res: any) {
     res.setHeader("Allow", "GET, POST");
     return res.status(405).json({ error: "Method not allowed" });
   }
-  await invoke(requireAdmin, req, res);
-  if (!res.headersSent && !res.writableEnded) {
-    return invoke(endpoint, req, res);
-  }
+  let authorized = false;
+  requireAdmin(req, res, () => {
+    authorized = true;
+  });
+  if (!authorized || res.headersSent || res.writableEnded) return;
+  return endpoint(req, res, () => undefined);
 }

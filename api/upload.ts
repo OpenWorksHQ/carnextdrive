@@ -2,19 +2,21 @@ import {
   uploadHandler,
   uploadMiddleware,
 } from "../server/routes/notifications";
-import { invoke, runMiddleware, setCors } from "../server/vercel";
 
 export default async function handler(req: any, res: any) {
-  setCors(res);
-  if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "Method not allowed" });
   }
   try {
-    await runMiddleware(uploadMiddleware, req, res);
+    await new Promise<void>((resolve, reject) => {
+      uploadMiddleware(req, res, (error?: unknown) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
     if (!res.headersSent && !res.writableEnded) {
-      await invoke(uploadHandler, req, res);
+      await uploadHandler(req, res, () => undefined);
     }
   } catch (error: any) {
     console.error("[upload] middleware error:", error?.message || error);
