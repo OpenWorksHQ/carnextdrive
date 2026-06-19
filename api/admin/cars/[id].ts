@@ -1,16 +1,29 @@
-import express from "express";
-import cors from "cors";
 import {
   deleteCar,
   requireAdmin,
   updateCar,
 } from "../../../server/routes/admin";
-import { withRouteParam } from "../../../server/vercel";
+import {
+  invoke,
+  setCors,
+  withRouteParam,
+} from "../../../server/vercel";
 
-const app = express();
-app.use(cors());
-app.use(express.json({ limit: "4mb" }));
-app.put("*", requireAdmin, withRouteParam("id", updateCar));
-app.delete("*", requireAdmin, withRouteParam("id", deleteCar));
-
-export default app;
+export default async function handler(req: any, res: any) {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).end();
+  const endpoint =
+    req.method === "PUT"
+      ? updateCar
+      : req.method === "DELETE"
+        ? deleteCar
+        : null;
+  if (!endpoint) {
+    res.setHeader("Allow", "PUT, DELETE");
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+  await invoke(requireAdmin, req, res);
+  if (!res.headersSent && !res.writableEnded) {
+    return invoke(withRouteParam("id", endpoint), req, res);
+  }
+}
