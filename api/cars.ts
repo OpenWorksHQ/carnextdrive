@@ -1,4 +1,4 @@
-import { getCarPricing } from "../server/routes/stripe";
+import { getCarPricing } from "../server/routes/stripe.js";
 
 export default function handler(req: any, res: any) {
   if (req.method !== "GET") {

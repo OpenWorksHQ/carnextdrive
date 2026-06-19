@@ -2,7 +2,7 @@ import {
   deleteCar,
   requireAdmin,
   updateCar,
-} from "../../../server/routes/admin";
+} from "../../../server/routes/admin.js";
 
 export default async function handler(req: any, res: any) {
   const endpoint =

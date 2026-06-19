@@ -1,18 +1,18 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import { handleDemo } from "./routes/demo";
+import { handleDemo } from "./routes/demo.js";
 import {
   createCheckoutSession,
   getCheckoutStatus,
   stripeWebhook,
   getCarPricing,
-} from "./routes/stripe";
+} from "./routes/stripe.js";
 import {
   uploadHandler,
   uploadMiddleware,
   notifyHandler,
-} from "./routes/notifications";
+} from "./routes/notifications.js";
 import {
   adminLogin,
   requireAdmin,
@@ -20,8 +20,8 @@ import {
   createCar,
   updateCar,
   deleteCar,
-} from "./routes/admin";
-import { getStoreHealth } from "./catalog/store";
+} from "./routes/admin.js";
+import { getStoreHealth } from "./catalog/store.js";
 
 export function createServer() {
   const app = express();

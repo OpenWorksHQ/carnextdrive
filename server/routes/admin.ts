@@ -16,8 +16,8 @@
 import { RequestHandler } from "express";
 import crypto from "crypto";
 import { z } from "zod";
-import { Car } from "../catalog/data";
-import { getCatalog, saveCatalog } from "../catalog/store";
+import { Car } from "../catalog/data.js";
+import { getCatalog, saveCatalog } from "../catalog/store.js";
 
 const TOKEN_TTL_MS = 1000 * 60 * 60 * 8; // 8 hours
 

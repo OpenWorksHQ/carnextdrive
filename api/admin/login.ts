@@ -1,4 +1,4 @@
-import { adminLogin } from "../../server/routes/admin";
+import { adminLogin } from "../../server/routes/admin.js";
 
 export default function handler(req: any, res: any) {
   if (req.method !== "POST") {

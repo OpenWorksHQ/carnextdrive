@@ -2,7 +2,7 @@ import {
   createCar,
   listCars,
   requireAdmin,
-} from "../../server/routes/admin";
+} from "../../server/routes/admin.js";
 
 export default async function handler(req: any, res: any) {
   const endpoint =

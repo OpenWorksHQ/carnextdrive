@@ -1,4 +1,4 @@
-import { getStoreHealth } from "../server/catalog/store";
+import { getStoreHealth } from "../server/catalog/store.js";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "GET") {

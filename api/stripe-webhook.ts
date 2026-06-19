@@ -1,4 +1,4 @@
-import { stripeWebhook } from "../server/routes/stripe";
+import { stripeWebhook } from "../server/routes/stripe.js";
 
 export default function handler(req: any, res: any) {
   if (req.method !== "POST") {

@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import Stripe from "stripe";
-import { notifyFromWebhook } from "./notifications";
-import { getCatalog, getCatalogMap } from "../catalog/store";
+import { notifyFromWebhook } from "./notifications.js";
+import { getCatalog, getCatalogMap } from "../catalog/store.js";
 
 // Server-side car catalogue: prices live ONLY on the server so the client
 // cannot manipulate amounts. The authoritative data is managed via the admin

@@ -19,7 +19,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { Pool } from "pg";
-import { Car, cloneSeed } from "./data";
+import { Car, cloneSeed } from "./data.js";
 
 // The current Netlify Database (in-project, powered by Neon) exposes
 // NETLIFY_DB_URL. The deprecated Netlify DB extension exposed

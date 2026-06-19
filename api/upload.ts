@@ -1,7 +1,7 @@
 import {
   uploadHandler,
   uploadMiddleware,
-} from "../server/routes/notifications";
+} from "../server/routes/notifications.js";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
