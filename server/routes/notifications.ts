@@ -12,11 +12,34 @@ function configureCloudinary() {
   const cloud_name = process.env.CLOUDINARY_CLOUD_NAME;
   const api_key = process.env.CLOUDINARY_API_KEY;
   const api_secret = process.env.CLOUDINARY_API_SECRET;
-  if (!cloud_name || !api_key || !api_secret) {
+  if (cloud_name && api_key && api_secret) {
+    cloudinary.config({ cloud_name, api_key, api_secret, secure: true });
+    return true;
+  }
+
+  const cloudinaryUrl = process.env.CLOUDINARY_URL;
+  if (!cloudinaryUrl) return false;
+
+  try {
+    const parsed = new URL(cloudinaryUrl);
+    if (
+      parsed.protocol !== "cloudinary:" ||
+      !parsed.hostname ||
+      !parsed.username ||
+      !parsed.password
+    ) {
+      return false;
+    }
+    cloudinary.config({
+      cloud_name: parsed.hostname,
+      api_key: decodeURIComponent(parsed.username),
+      api_secret: decodeURIComponent(parsed.password),
+      secure: true,
+    });
+    return true;
+  } catch {
     return false;
   }
-  cloudinary.config({ cloud_name, api_key, api_secret, secure: true });
-  return true;
 }
 
 // Multer with in-memory storage so we can stream straight to Cloudinary
@@ -54,7 +77,7 @@ export const uploadHandler: RequestHandler = async (req, res) => {
     if (!configureCloudinary()) {
       return res.status(500).json({
         error:
-          "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET.",
+          "Cloudinary is not configured. Set CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET.",
       });
     }
 
