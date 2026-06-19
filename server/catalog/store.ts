@@ -36,6 +36,10 @@ function getConnectionString(): string {
   );
 }
 
+export function hasCatalogDatabase(): boolean {
+  return Boolean(getConnectionString());
+}
+
 // Local file fallback. On Lambda/Netlify only /tmp is writable.
 const DATA_DIR = process.env.LAMBDA_TASK_ROOT
   ? "/tmp/carnextdrive-data"

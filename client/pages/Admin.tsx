@@ -14,12 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
 import type { Car } from "@/lib/cars";
 
@@ -173,7 +168,11 @@ export default function Admin() {
 
   const validate = (d: CarDraft): string | null => {
     if (!d.name.trim()) return "Name is required";
-    if (d.weekly === "" || Number.isNaN(Number(d.weekly)) || Number(d.weekly) < 0)
+    if (
+      d.weekly === "" ||
+      Number.isNaN(Number(d.weekly)) ||
+      Number(d.weekly) < 0
+    )
       return "Weekly price must be a number ≥ 0";
     if (
       d.monthly === "" ||
@@ -189,11 +188,14 @@ export default function Admin() {
     if (err) return toast.error(err);
     setSavingId(d.id!);
     try {
-      const res = await authedFetch(`/api/admin/cars/${d.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(draftToPayload(d)),
-      });
+      const res = await authedFetch(
+        `/api/admin/cars?id=${encodeURIComponent(d.id!)}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(draftToPayload(d)),
+        },
+      );
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || "Save failed");
@@ -244,9 +246,12 @@ export default function Admin() {
       return;
     setSavingId(d.id);
     try {
-      const res = await authedFetch(`/api/admin/cars/${d.id}`, {
-        method: "DELETE",
-      });
+      const res = await authedFetch(
+        `/api/admin/cars?id=${encodeURIComponent(d.id)}`,
+        {
+          method: "DELETE",
+        },
+      );
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || "Delete failed");
@@ -513,7 +518,9 @@ function CarForm({
             value={draft.features}
             onChange={field("features")}
             rows={4}
-            placeholder={"Backup Camera\nBluetooth Connectivity\nClimate Control"}
+            placeholder={
+              "Backup Camera\nBluetooth Connectivity\nClimate Control"
+            }
             className="mt-1.5 font-mono text-sm"
           />
         </div>

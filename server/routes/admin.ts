@@ -17,7 +17,11 @@ import { RequestHandler } from "express";
 import crypto from "crypto";
 import { z } from "zod";
 import { Car } from "../catalog/data.js";
-import { getCatalog, saveCatalog } from "../catalog/store.js";
+import {
+  getCatalog,
+  hasCatalogDatabase,
+  saveCatalog,
+} from "../catalog/store.js";
 
 const TOKEN_TTL_MS = 1000 * 60 * 60 * 8; // 8 hours
 
@@ -103,7 +107,10 @@ export const adminLogin: RequestHandler = (req, res) => {
 const carInputSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(120),
   type: z.string().trim().max(60).default(""),
-  weekly: z.coerce.number().nonnegative("Weekly price must be ≥ 0").max(1_000_000),
+  weekly: z.coerce
+    .number()
+    .nonnegative("Weekly price must be ≥ 0")
+    .max(1_000_000),
   monthly: z.coerce
     .number()
     .nonnegative("Monthly price must be ≥ 0")
@@ -161,7 +168,12 @@ export const updateCar: RequestHandler = async (req, res) => {
   const car = { ...cars[idx], ...parsed.data, id } as Car;
   const updated = cars.map((c, i) => (i === idx ? car : c));
   if (!(await saveCatalog(updated))) {
-    return res.status(500).json({ error: "Failed to persist catalogue" });
+    return res.status(500).json({
+      error:
+        process.env.VERCEL && !hasCatalogDatabase()
+          ? "DATABASE_URL is required for persistent price changes on Vercel"
+          : "Failed to persist catalogue",
+    });
   }
   return res.json(car);
 };
