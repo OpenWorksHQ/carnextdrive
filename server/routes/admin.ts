@@ -171,7 +171,7 @@ export const updateCar: RequestHandler = async (req, res) => {
     return res.status(500).json({
       error:
         process.env.VERCEL && !hasCatalogDatabase()
-          ? "DATABASE_URL is required for persistent price changes on Vercel"
+          ? "DATABASE_URL or POSTGRES_URL is required for persistent price changes on Vercel"
           : "Failed to persist catalogue",
     });
   }

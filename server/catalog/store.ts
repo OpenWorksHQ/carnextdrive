@@ -32,6 +32,8 @@ function getConnectionString(): string {
     process.env.NETLIFY_DATABASE_URL ||
     process.env.NETLIFY_DATABASE_URL_UNPOOLED ||
     process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_URL_NON_POOLING ||
     ""
   );
 }
